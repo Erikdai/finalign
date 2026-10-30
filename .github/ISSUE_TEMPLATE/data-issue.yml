@@ -1,0 +1,33 @@
+name: Wrong extraction or grading
+description: A figure is parsed from an announcement wrongly, or the grader scores an answer wrongly.
+labels: ["bug", "data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The grader reads the first number of the target's unit class in the answer and converts it to base units before comparing, so "1.23亿元" and "123,000,000元" are equal and a correct number after a wrong one is still scored wrong.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Where
+      options:
+        - cninfo PDF parsing (crawl_cninfo.py)
+        - Cleaning or deduplication
+        - Grader (evaluation/metrics.py)
+        - Question or preference-pair construction
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: The announcement title and the table rows, or the answer and the target from predictions.jsonl.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: shown
+    attributes:
+      label: What FinAlign produces, and what is correct
+    validations:
+      required: true

@@ -1,0 +1,63 @@
+name: Bug report
+description: A script fails, crashes, or behaves differently from the docs.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](https://github.com/Erikdai/finalign/issues?q=is%3Aissue) first, and check that the bug reproduces on the latest commit.
+  - type: input
+    id: version
+    attributes:
+      label: Commit
+      description: Output of `git rev-parse --short HEAD`.
+      placeholder: "a1b2c3d"
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Stage
+      options:
+        - Data pipeline (synthetic or cninfo)
+        - Continued pretraining
+        - LoRA SFT
+        - Negative mining or DPO
+        - Evaluation
+        - Adapter merging or serving
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend
+      options:
+        - minimind (default)
+        - hf (transformers model)
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Hardware, OS, Python and torch version
+      placeholder: "CPU only, Windows 11, Python 3.13, torch 2.9.1"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Command to reproduce
+      description: The full command line, with every flag.
+      render: shell
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error output
+      description: The full traceback or log lines, as text rather than a screenshot.
+      render: text

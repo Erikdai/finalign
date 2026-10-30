@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: unit tests (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+
+  data:
+    name: data pipeline (small)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -r requirements.txt
+      - run: python data_pipeline/synth_announcements.py --num_companies 60 --out data/raw/announcements.jsonl
+      - run: python data_pipeline/clean_dedup.py --in data/raw/announcements.jsonl --out data/processed/docs.jsonl
+      - run: python data_pipeline/build_chunks.py --docs data/processed/docs.jsonl
+      - run: python data_pipeline/build_cpt.py --out data/cpt/pretrain_fin.jsonl
+      - run: python data_pipeline/build_qa.py --mode sft --num 200 --out data/sft/sft_fin.jsonl
+      - run: python data_pipeline/build_qa.py --mode eval --num 50 --num_refusal 10 --out data/eval/finqa_test.jsonl
+      - run: python data_pipeline/build_dpo.py --num 100 --out data/dpo/dpo_fin.jsonl
+
+  lint:
+    name: ruff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install "ruff>=0.16"
+      - run: ruff check .
